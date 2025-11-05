@@ -1,0 +1,108 @@
+# Quick Connection Reference
+## Adafruit Feather ESP32-S2 TFT - CORRECTED PINS
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CONNECTION SUMMARY                            │
+│              **CORRECTED I2C PINS: GPIO 41, 42**                │
+└─────────────────────────────────────────────────────────────────┘
+
+ADS1115 ADC (I2C - Direct Wire to Header Pins)
+────────────────────────────────────────────────
+  VDD  ──► Feather 3V (LEFT side header)
+  GND  ──► Feather GND
+  SCL  ──► Feather GPIO 41 (RIGHT side header - labeled "SCL")
+  SDA  ──► Feather GPIO 42 (RIGHT side header - labeled "SDA")
+  ADDR ──► GND (sets I2C address to 0x48)
+  A0   ──► Voltage divider output (from sensor)
+
+
+Voltage Divider (0-10V → 0-3.3V)
+────────────────────────────────
+  Sensor: QDY30A 0-10V 1M Liquid Level Sensor
+  (See Amazon: https://a.co/d/4JelvCt for example)
+
+  Sensor OUT ─────[20kΩ]──┬──[10kΩ]──► GND
+                          │
+                          ├──────► ADS1115 A0
+                          │
+                          └── 2.2µF──► GND 
+                                    
+
+
+5V Relay Module (Active-High - CORRECTED)
+────────────────────────────
+  VCC  ──► Feather USB (5V, RIGHT side)
+  GND  ──► Feather GND
+  IN   ──► Feather GPIO 5 (RIGHT side)
+
+  Logic: GPIO 5 HIGH = Relay ON (pump ON)
+         GPIO 5 LOW  = Relay OFF (pump OFF)
+
+
+Piezo Beeper
+────────────
+  (+)  ──► Feather GPIO 6 (RIGHT side)
+  (-)  ──► Feather GND
+
+
+Button 1 (Manual Pump Toggle)
+──────────────────────────────
+  Terminal 1  ──► Feather GPIO 9 (RIGHT side)
+  Terminal 2  ──► Feather GND
+
+
+Button 2 (Alarm Reset)
+──────────────────────
+  Terminal 1  ──► Feather GPIO 10 (RIGHT side)
+  Terminal 2  ──► Feather GND
+
+
+Built-in Components (No Wiring)
+────────────────────────────────
+  NeoPixel    = GPIO 33 (onboard, back of board)
+  TFT Display = ST7789 135x240 (onboard, front)
+
+
+Power Supply
+────────────
+  USB-C 5V/2A ──► Feather USB-C connector
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    CRITICAL NOTES                                │
+└─────────────────────────────────────────────────────────────────┘
+
+✓ I2C pins are GPIO 41 (SCL) and GPIO 42 (SDA) - ON RIGHT SIDE!
+✓ These are clearly labeled "SCL" and "SDA" on the board
+✓ GPIO 21 (TFT_I2C_POWER) MUST be HIGH - powers TFT and I2C
+✓ GPIO 34 (NEOPIXEL_POWER) MUST be HIGH - powers NeoPixel
+✓ GPIO 45 (TFT_BACKLITE) MUST be HIGH - enables backlight
+✓ All GND connections must be common
+✓ ADS1115 runs on 3.3V (use 3V pin, NOT USB/5V)
+✓ Voltage divider is REQUIRED (protects ADS1115 from 10V)
+✓ Relay module needs 5V (use USB pin, NOT 3V)
+✓ Internal pullups enabled on GPIO 9 and 10 (no external resistors)
+
+I2C PULLUP RESISTORS:
+✓ NOT NEEDED - Built-in pullups powered by GPIO 21
+✓ ADS1115 module has onboard 10kΩ pullups
+✓ Do NOT add external pullups - may cause bus issues
+
+⚠️  HIGH VOLTAGE WARNING for pump relay contacts!
+⚠️  Use qualified electrician for AC wiring
+⚠️  Install GFCI protection
+
+```
+
+## Critical Power Pins (Code Handles These)
+
+The sketch automatically enables these pins in setup():
+
+| GPIO | Function | Required State |
+|------|----------|----------------|
+| 21 | TFT_I2C_POWER | HIGH (powers TFT and I2C pullups) |
+| 34 | NEOPIXEL_POWER | HIGH (powers NeoPixel) |
+| 45 | TFT_BACKLITE | HIGH (backlight on) |
+
+**Without these enabled, nothing will work!**
