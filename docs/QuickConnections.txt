@@ -26,7 +26,16 @@ Voltage Divider (0-10V → 0-3.3V)
                           │
                           ├──────► ADS1115 A0
                           │
-                          └── 2.2µF──► GND 
+                          └── 2.2µF──► GND
+
+  *** SENSOR OFFSET CONFIGURATION ***
+  Sensor mounted 1.5" above sump bottom
+  - When sensor reads 0": Display shows 1.5" (sensor level)
+  - When sensor reads 3.5": Display shows 5.0" (pump turns ON)
+  - When sensor reads 0.5": Display shows 2.0" (pump turns OFF)
+
+  Code constant: SENSOR_OFFSET_INCHES = 1.5
+  This offset is automatically added to all readings. 
                                     
 
 

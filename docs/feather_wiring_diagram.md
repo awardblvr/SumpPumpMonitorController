@@ -686,7 +686,7 @@ Install **0.1µF ceramic capacitors** between VCC and GND on all modules:
 - [ ] Voltage divider output measures correct (3.33V at 10V input)
 
 ### Initial Power-On (Code Required)
-- [ ] Buck converter outputs 12V (adjust trimmer pot if needed)
+- [ ] Buck converter outputs 12V (fixed output)
 - [ ] Pressure sensor has 12V power
 - [ ] I2C scanner detects ADS1115 at address 0x48
 - [ ] Display shows initialization messages
@@ -721,10 +721,11 @@ Install **0.1µF ceramic capacitors** between VCC and GND on all modules:
 
 ---
 
-**Document Version:** 3.1 (Updated for v2.1 firmware: corrected relay logic, disabled built-in NeoPixel)
-**Last Updated:** 2025-11-04
+**Document Version:** 3.2 (Updated for v2.2 firmware: added sensor offset correction, changed OFF_INCHES to 2.0")
+**Last Updated:** 2025-11-05
 **Board:** Adafruit Feather ESP32-S2 TFT (Product #5300)
 **Major Changes:**
+- v3.2 (2025-11-05): Added SENSOR_OFFSET_INCHES (1.5"), changed OFF_INCHES from 3.0 to 2.0
 - v3.1 (2025-11-04): Corrected relay logic to active-high, noted built-in NeoPixel disabled
 - v3.0 (2025-11-03): Added 12V sensor power supply, external NeoPixel, pressure sensor details
 - v2.0 (2025-11-03): Converted from LilyGo T-Display S3 to Feather ESP32-S2 TFT

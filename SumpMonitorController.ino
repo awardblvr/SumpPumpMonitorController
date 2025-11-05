@@ -64,7 +64,8 @@ bool time_synced = false;  // Track if NTP sync succeeded
 
 // Pump Logic
 #define TRIGGER_INCHES 5.0
-#define OFF_INCHES 3.0
+#define OFF_INCHES 2.0
+#define SENSOR_OFFSET_INCHES 1.5  // Sensor mounted 1.5" above actual bottom
 #define TIMEOUT_SEC 120
 bool pump_on = false;
 unsigned long pump_start_ms = 0;
@@ -459,7 +460,8 @@ float readWaterLevel() {
     if (result < 0.0) result = 0.0;
     if (result > 18.0) result = 18.0;
 
-    return result;
+    // Add sensor offset (sensor mounted above actual bottom)
+    return result + SENSOR_OFFSET_INCHES;
   }
 
   // Real ADS1115 reading
@@ -477,7 +479,8 @@ float readWaterLevel() {
   if (inches > 18.0) inches = 18.0;
   if (inches < 0.0) inches = 0.0;
 
-  return inches;
+  // Add sensor offset (sensor mounted above actual bottom)
+  return inches + SENSOR_OFFSET_INCHES;
 }
 
 /**

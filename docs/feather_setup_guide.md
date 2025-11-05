@@ -212,15 +212,24 @@ If your code shows different values, update them to match above.
 
 ### Step 5: Verify Pump Trigger Levels
 
-Check these settings (around line 58-60):
+Check these settings (around line 66-69):
 
 ```cpp
-#define TRIGGER_INCHES 8.0   // Start pump at this water level
-#define OFF_INCHES 4.0       // Stop pump at this water level
-#define TIMEOUT_SEC 120      // Alarm if pump runs this long
+#define TRIGGER_INCHES 5.0           // Start pump at this water level
+#define OFF_INCHES 2.0               // Stop pump at this water level
+#define SENSOR_OFFSET_INCHES 1.5     // Sensor mounted above sump bottom
+#define TIMEOUT_SEC 120              // Alarm if pump runs this long
 ```
 
 **Adjust if needed** based on your sump pit dimensions and requirements.
+
+**Sensor Offset Explanation:**
+- The sensor is mounted 1.5" above the actual bottom of the sump
+- When the sensor reads 0" (minimum reading), water is at sensor level (1.5" from true bottom)
+- The code automatically adds SENSOR_OFFSET_INCHES to all readings
+- Example: Sensor reads 3.5" → Display shows 5.0" → Pump turns ON
+- Example: Sensor reads 0.5" → Display shows 2.0" → Pump turns OFF
+- This ensures displayed water levels represent actual depth from sump bottom
 
 ### Step 6: Optional Customizations
 

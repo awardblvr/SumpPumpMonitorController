@@ -15,7 +15,8 @@ Automatic sump pump controller with water level monitoring, timeout protection, 
 - **External NeoPixel** on GPIO 11 (optional but recommended for status indication)
 
 ## Features
-- **Automatic Pump Control**: Turns pump on at 5" water level, off at 3"
+- **Automatic Pump Control**: Turns pump on at 5" water level, off at 2"
+- **Sensor Offset Correction**: Accounts for sensor mounting 1.5" above sump bottom
 - **Timeout Protection**: 120-second maximum runtime with alarm
 - **Visual Status**: External NeoPixel shows system status (Green=OK, Red=Alarm, Blue=High Water)
 - **Audible Alarm**: Beeper sounds if pump times out
@@ -38,7 +39,7 @@ Automatic sump pump controller with water level monitoring, timeout protection, 
 
 3. **Configure Sketch**:
    - Edit WiFi credentials in sketch (lines 48-49)
-   - Adjust thresholds if needed (TRIGGER_INCHES=5.0, OFF_INCHES=3.0, TIMEOUT_SEC=120)
+   - Adjust thresholds if needed (TRIGGER_INCHES=5.0, OFF_INCHES=2.0, SENSOR_OFFSET_INCHES=1.5, TIMEOUT_SEC=120)
 
 4. **Upload**:
    - Select Board: **Adafruit Feather ESP32-S2 TFT**
@@ -89,6 +90,7 @@ Automatic sump pump controller with water level monitoring, timeout protection, 
 - **Pump runs backwards**: Relay logic was corrected - HIGH=ON, LOW=OFF
 
 ## Version History
+- **v2.2** (2025-11-05): Added sensor offset correction (1.5"), changed OFF_INCHES to 2.0"
 - **v2.1** (2025-11-04): Updated trigger levels (5"/3"), fixed relay logic (active-high), disabled built-in NeoPixel, added RSSI display, fixed date format to 12-hour AM/PM
 - **v2.0** (2025-11-03): Converted to ESP32-S2 TFT from LilyGo T-Display S3
 - **v1.1**: Corrected version with improved error handling
