@@ -40,7 +40,8 @@
 // Bump this every time you upload a new build so you can tell at a glance what is running.
 // 2.0 = MQTT / Home Assistant interface (see SumpMqtt.ino), remote commands, pump disable, editable levels.
 // 2.1 = display only: MQTT status indicator moved down to y=20. MQTT interface unchanged (still interface 2.0).
-#define FW_VERSION "2.1"
+// 2.2 = display only: MQTT status indicator moved down once more, to y=21. Interface unchanged.
+#define FW_VERSION "2.2"
 
 // Bench-test only: when 1, a missing ADS1115 is replaced by RANDOM simulated water levels.
 // Leave at 0 for the installed controller - simulated levels must never drive a real pump.
@@ -1771,11 +1772,11 @@ void updateDisplay() {
   tft.print(ver_text);
 
   // MQTT link indicator (right-justified, under the version): green when connected to the broker.
-  // y = 20 leaves three blank pixel rows below the version text (its glyphs end at row 16); the "Last:" line below
-  // starts at y = 25 and is never wide enough to reach this column, so there is no overlap.
+  // y = 21 leaves four blank pixel rows below the version text (its glyphs end at row 16); the "Last:" line below
+  // starts at y = 25 and is never wide enough (186 px at most) to reach this column (x >= 198), so there is no overlap.
   tft.setTextColor(mqttIsConnected() ? ST77XX_GREEN : ST77XX_RED);
   const char* mq_text = mqttIsConnected() ? "MQTT ok" : "MQTT --";
-  tft.setCursor(240 - (int)strlen(mq_text) * 6, 20);
+  tft.setCursor(240 - (int)strlen(mq_text) * 6, 21);
   tft.print(mq_text);
 
   y += 25;
