@@ -1,0 +1,11 @@
+# macOS Finder litter
+.DS_Store
+
+# JetBrains IDE settings
+.idea/
+
+# Real credentials (template is secrets.h.example)
+secrets.h
+
+# Backup directories
+*_Backups*
