@@ -1,0 +1,84 @@
+# SUPERSEDED 2026-11-25 by sump_pump.package.draft.yaml (firmware 2.0 renamed the device to "Sump Pump", so every
+# entity id below is wrong). Kept only so nothing is deleted without you saying so; do not use it.
+#
+# DRAFT - NOT DEPLOYED. Sump Monitor alert package for Home Assistant (2026-11-25)
+#
+# Prepared from the reference docs only; never copied to the HA box and not validated with `ha core check`.
+# Assumes firmware v1.2 (not written yet) publishes MQTT discovery for the entities named below, with
+# device name "Sump Monitor". Entity ids are therefore a prediction - confirm them in Settings > Entities
+# once the device appears, and adjust.
+#
+# House conventions followed (SysRef section 6 and 11): package file under packages/, a mirror kept in ha/,
+# alerts routed through script.house_notify (no direct notify.* service).
+#
+# TODO confirm before use:
+#   1. the exact fields script.house_notify accepts (this draft assumes `message` and `title`);
+#   2. who should be told for each cause;
+#   3. the thresholds (5 minutes of silence, etc.);
+#   4. "pump runs per hour" is intentionally NOT here - create it as a History Stats helper in the UI on
+#      binary_sensor.sump_monitor_pump_running (type: count, last hour) and alert on that.
+
+automation:
+  - id: sump_high_water_alert
+    alias: "Sump - high water alert"
+    description: "Level above the 10 inch alarm threshold (firmware has hysteresis; clears at 9.5 inch)."
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.sump_monitor_high_water
+        to: "on"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump HIGH WATER"                       # TODO confirm field names
+          message: >-
+            Sump level is {{ states('sensor.sump_monitor_water_level') }} in.
+            Pump state: {{ states('sensor.sump_monitor_pump_state') }}.
+
+  - id: sump_pump_trouble_alert
+    alias: "Sump - pump trouble alert"
+    description: "Three 4-minute pump timeouts in a row with the water still high."
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.sump_monitor_pump_trouble
+        to: "on"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump PUMP TROUBLE"                     # TODO confirm field names
+          message: >-
+            The sump pump has timed out repeatedly and the water is still high
+            ({{ states('sensor.sump_monitor_water_level') }} in). Check the discharge line.
+
+  - id: sump_sensor_fault_alert
+    alias: "Sump - level sensor fault alert"
+    description: "ADS1115 stopped answering for about 10 s; the controller is holding the last good level."
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.sump_monitor_sensor_fault
+        to: "on"
+        for: "00:00:30"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump SENSOR FAULT"                     # TODO confirm field names
+          message: "The sump level sensor is not responding. The controller is using the last good level."
+
+  - id: sump_controller_silent_alert
+    alias: "Sump - controller silent"
+    description: >-
+      No telemetry for 5 minutes. The sensors expire after 60 s, so this means the controller, WiFi or
+      the broker is down - the hardwired OmniPro sump zone is then the only remaining alarm path.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: sensor.sump_monitor_water_level
+        to: "unavailable"
+        for: "00:05:00"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump controller not reporting"         # TODO confirm field names
+          message: "No data from the sump controller for 5 minutes (controller, WiFi or MQTT broker)."

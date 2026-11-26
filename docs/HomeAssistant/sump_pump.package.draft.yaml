@@ -1,0 +1,104 @@
+# DRAFT - NOT DEPLOYED. Sump Pump alert package for Home Assistant (updated 2026-11-25 for firmware 2.0)
+#
+# Prepared from the reference docs and the firmware's own discovery table; never copied to the HA box and not
+# validated with `ha core check`. The firmware (SumpMqtt.ino) publishes MQTT discovery for a device named
+# "Sump Pump", so Home Assistant should create entities named like sensor.sump_pump_water_level. Entity ids are a
+# prediction - confirm them in Settings > Entities once the device appears, and adjust.
+#
+# House conventions followed (SysRef sections 6 and 11): package file under packages/, a mirror kept in ha/,
+# alerts routed through script.house_notify (no direct notify.* service).
+#
+# TODO confirm before use:
+#   1. the exact fields script.house_notify accepts (this draft assumes `message` and `title`);
+#   2. who should be told for each cause;
+#   3. the thresholds (15 minutes of silence, etc.);
+#   4. "pump runs per hour" is intentionally NOT here - create it as a History Stats helper in the UI on
+#      binary_sensor.sump_pump_pump_running (type: count, last hour) and alert on that.
+#
+# Note on timing: the controller reports every 5 minutes normally (every 2 minutes while the water is rising or a
+# problem exists) and immediately on any change, and its sensors expire after 15 minutes of silence.
+# Problems are ALSO pushed instantly on the topic Sump_pump/event, which an MQTT trigger could use directly.
+
+automation:
+  - id: sump_high_water_alert
+    alias: "Sump - high water alert"
+    description: "Level above the alarm threshold (default 10 inch; firmware hysteresis clears it 0.5 inch lower)."
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.sump_pump_high_water
+        to: "on"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump HIGH WATER"                       # TODO confirm field names
+          message: >-
+            Sump level is {{ states('sensor.sump_pump_water_level') }} in.
+            Pump state: {{ states('sensor.sump_pump_pump_state') }}.
+
+  - id: sump_pump_trouble_alert
+    alias: "Sump - pump trouble alert"
+    description: "Three 4-minute pump timeouts in a row with the water still high."
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.sump_pump_pump_trouble
+        to: "on"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump PUMP TROUBLE"                     # TODO confirm field names
+          message: >-
+            The sump pump has timed out repeatedly and the water is still high
+            ({{ states('sensor.sump_pump_water_level') }} in). Check the discharge line.
+
+  - id: sump_sensor_fault_alert
+    alias: "Sump - level sensor fault alert"
+    description: >-
+      ADS1115 stopped answering for about 10 s. Automatic pump START is blocked while this lasts
+      (see SENSOR_FAULT_BLOCKS_AUTO_START in the sketch), so this one matters.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.sump_pump_level_sensor_fault
+        to: "on"
+        for: "00:00:30"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump SENSOR FAULT"                     # TODO confirm field names
+          message: "The sump level sensor is not responding. Automatic pumping is blocked until it recovers."
+
+  - id: sump_pump_disabled_reminder
+    alias: "Sump - pump still disabled"
+    description: "Reminder if the pump has been disabled by command for more than 12 hours (it re-enables itself after 24 h)."
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.sump_pump_pump_disabled
+        to: "on"
+        for: "12:00:00"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump pump is DISABLED"                 # TODO confirm field names
+          message: >-
+            The sump pump has been disabled for 12 hours
+            ({{ states('sensor.sump_pump_pump_disable_remaining') }} min left). Press Enable pump to resume now.
+
+  - id: sump_controller_silent_alert
+    alias: "Sump - controller silent"
+    description: >-
+      No telemetry for 15 minutes (sensors expire after 15 min of silence). This means the controller, WiFi or
+      the broker is down - the hardwired OmniPro sump zone is then the only remaining alarm path.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: sensor.sump_pump_water_level
+        to: "unavailable"
+        for: "00:02:00"
+    actions:
+      - action: script.house_notify
+        data:
+          title: "Sump controller not reporting"         # TODO confirm field names
+          message: "No data from the sump controller for over 15 minutes (controller, WiFi or MQTT broker)."
